@@ -3,10 +3,9 @@
 
 import os 
 import oracledb
-from datetime import date
-
 import pandas as pd
 
+# -------------------------- SUBALGORITIMOS --------------------------
 def limpar_tela():
     os.system("cls" if os.name == "nt" else "clear")
 
@@ -18,6 +17,7 @@ def menu():
     print("1 - Cadastrar Produto")
     print("2 - Pesquisar Produto")
     print("3 - Listar todos os registros Cliente")
+    print()
  
     opcao()
  
@@ -25,21 +25,20 @@ def opcao():
     opcao = input("Escolha_")
     match opcao:
         case "0":
-            return 
+            global conexao
+            conexao = False
         case "1":
             cadastrar()
         case "2":
-            
-            pesquisar()
+            pesquisar_produto()
         case "3":
-            ...
-            # listar_todos()
+            listar_todos()
         case  _:
             print("Opção selecionada não existe...")
+
     input("Pressione ENTER para continuar...")  
 
 def cadastrar():
-    
     try:
         print("----- CADASTRAR CLIENTE -----")
         # Recebe os valores para cadastro
@@ -48,14 +47,11 @@ def cadastrar():
         categoria = input("{:.<25}:".format("Digite o categoria "))
         preco = float(input("{:.<25}:".format("Digite o preço ")))
         peso = float(input("{:.<25}:".format("Digite o peso ")))
-        
-
         cadastro = f""" INSERT INTO T_PRODUTO (nm_produto, setor_produto, categoria_produto,preco_produto,peso)VALUES ('{nome}', '{setor}', '{categoria}',{preco},{peso}) """
-
         inst_cadastro.execute(cadastro)
         conn.commit()
+
     except ValueError:
-            
         print("Digite um valor válido!")
     except:
         print("Erro na transação do BD")
@@ -63,66 +59,66 @@ def cadastrar():
         # Caso haja sucesso na gravação
         print("##### Dados GRAVADOS #####")
 
-def pesquisar():
-    print("----- LISTAR PETs -----")
-    lista_produtos = []  # Lista para captura de dados do Banco
-    pesquisa=input("Produto:_ ")
+def pesquisar_produto():
+    limpar_tela()
+    print("----- PESQUISAR PRODUTO -----")
+    
+    sql = escolher_produto()
+    listar_dados(sql)
 
-    # Monta a instrução SQL de seleção de todos os registros da tabela
-    inst_consulta.execute(f"SELECT * FROM T_PRODUTO WHERE nome='{pesquisa}'")
+def escolher_produto():
+    pesquisa=input("Produto_ ")
+    return f"SELECT * FROM T_PRODUTO WHERE nm_produto='{pesquisa}'"
+
+def listar_todos():
+    limpar_tela()
+    print("----- PRODUTOS -----")
+    sql = "SELECT * FROM T_PRODUTO"
+    listar_dados(sql)
+
+def listar_dados(sql: str) -> None:
+    lista_produtos = []  # Lista para captura de dados do Banco
+
+    # Instrução SQL com base no que foi selecinado na tela de menu
+    inst_consulta.execute(sql)
+
     # Captura todos os registros da tabela e armazena no objeto data
     data = inst_consulta.fetchall()
 
     # Insere os valores da tabela na Lista
     for dt in data:
-        lista_dados.append(dt)
+        lista_produtos.append(dt)
 
     # ordena a lista
-    lista_dados = sorted(lista_dados)
+    lista_produtos = sorted(lista_produtos)
 
     # Gera um DataFrame com os dados da lista utilizando o Pandas
     dados_df = pd.DataFrame.from_records(
-        lista_dados, columns=['Id', 'Tipo', 'Nome', 'Idade'], index='Id')
-
+        lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'categoria_produto', 'preco_produto', 'peso'], index='cod_produto')
+    
     # Verifica se não há registro através do dataframe
     if dados_df.empty:
-        print(f"Não há um Pets cadastrados!")
+        print(f"Não há produto cadastrado!")
     else:
         print(dados_df)
-
-#===========================================================
+# ==================== CONEXÃO ====================
 
 try :
     conn = oracledb.connect(user = "rm561713",password = "290107",dsn = "oracle.fiap.com.br:1521/ORCL")
-
     inst_cadastro = conn.cursor()
     inst_consulta = conn.cursor()
     inst_alteracao = conn.cursor()
     inst_exclusao= conn.cursor()
+
 except Exception as e:
     print(e)
     conexao=False
+
 else:
     conexao=True
 
-
 while conexao:
-    limpar_tela()
-
     menu()
 
-    
 
-
-
-
-
-
-
-#==================================================
-
-
-
- 
-
- 
+# TODO organizar e comentar as funções pesquisar_produto() e listar_todos()
