@@ -4,6 +4,7 @@
 import os 
 import oracledb
 import pandas as pd
+from datetime import datetime
 
 # -------------------------- SUBALGORITIMOS --------------------------
 def limpar_tela():
@@ -40,15 +41,17 @@ def opcao():
 
 def cadastrar():
     try:
-        print("----- CADASTRAR CLIENTE -----")
+        print("----- CADASTRAR PRODUTO -----")
         # Recebe os valores para cadastro
-        nome = input("{:.<25}:".format("NOME "))
-        setor = input("{:.<25}:".format("SETOR "))
-        categoria = input("{:.<25}:".format("Digite o categoria "))
-        preco = float(input("{:.<25}:".format("Digite o preço ")))
-        peso = float(input("{:.<25}:".format("Digite o peso ")))
-        cadastro = f""" INSERT INTO T_PRODUTO (nm_produto, setor_produto, categoria_produto,preco_produto,peso)VALUES ('{nome}', '{setor}', '{categoria}',{preco},{peso}) """
-        inst_cadastro.execute(cadastro)
+        nome = input("{:.<25}:".format("Digite o nome do produto: "))
+        setor = input("{:.<25}:".format("Digite o setor: "))
+        data_str = input("{:.<25}:".format("Digite a data de vencimento (DD/MM/YYYY): "))
+        preco = float(input("{:.<25}:".format("Digite o preço: ")))
+        peso = float(input("{:.<25}:".format("Digite o peso: ")))
+
+        validade = datetime.strptime(data_str, "%d/%m/%Y")
+        sql = """ INSERT INTO T_PRODUTO (nm_produto, setor_produto, dt_validade,preco_produto,peso)VALUES (:1,:2,:3,:4,:5) """
+        inst_cadastro.execute(sql,(nome, setor, validade, preco, peso))
         conn.commit()
 
     except ValueError:
@@ -94,7 +97,7 @@ def listar_dados(sql: str) -> None:
 
     # Gera um DataFrame com os dados da lista utilizando o Pandas
     dados_df = pd.DataFrame.from_records(
-        lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'categoria_produto', 'preco_produto', 'peso'], index='cod_produto')
+        lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'peso'], index='cod_produto')
     
     # Verifica se não há registro através do dataframe
     if dados_df.empty:
