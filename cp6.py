@@ -23,6 +23,18 @@ def menu():
     print()
  
     opcao()
+
+def pesquisa_string()->None:
+    limpar_tela()
+    valor_consultado = input("Qual o valor a ser consultado?_")
+
+    print("----- PRODUTOS -----")
+    sql = "SELECT * FROM T_PRODUTO WHERE nm_produto LIKE ':1%'"
+    inst_consulta.execute(sql,(valor_consultado,))
+
+    
+    
+
  
 def opcao():
     opcao = input("Escolha_")
@@ -35,7 +47,7 @@ def opcao():
         case "2":
             pesquisar_produto()
         case "3":
-            listar_todos()
+            escolhaSubmenu()
         case "4":
             editar_produto()
         case "5":
@@ -44,6 +56,23 @@ def opcao():
             print("Opção selecionada não existe...")
 
     input("Pressione ENTER para continuar...")  
+
+def escolhaSubmenu():
+    print("""a - Listar Todos
+          b - Pesquisar campo (String)
+          c - Pesquisar campo (numérico)""")
+    
+    opcao = input("Escolha:_").lower()
+    match opcao:
+        case "0":
+            ...
+        case "a":
+            listar_todos()
+        case "b":
+            pesquisa_string()
+        case _:
+            print("Valor inválido")
+
 
 def cadastrar():
     try:
@@ -85,10 +114,23 @@ def listar_todos():
     sql = "SELECT * FROM T_PRODUTO"
     listar_dados(sql)
 
-def listar_dados(sql: str) -> None:
+def listar_string():
+    limpar_tela()
+    valor_consultado = input("Qual o valor a ser consultado?_")
+
+    print("----- PRODUTOS -----")
+    sql = "SELECT * FROM T_PRODUTO WHERE nm_produto LIKE '%:1'"
+    listar_dados(sql,valor_consultado)
+
+def listar_dados(sql: str, parametro:str =None) -> None:
     lista_produtos = []  # Lista para captura de dados do Banco
+
+    if not parametro:
     # Instrução SQL com base no que foi selecinado na tela de menu
-    inst_consulta.execute(sql)
+        inst_consulta.execute(sql)
+    else:
+        inst_consulta.execute(sql,(parametro,))
+
     # Captura todos os registros da tabela e armazena no objeto data
     data = inst_consulta.fetchall()
     # Insere os valores da tabela na Lista
