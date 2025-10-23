@@ -91,6 +91,8 @@ c - Pesquisar campo (numérico)
             listar_todos()
         case "b":
             listar_string()
+        case "c":
+            listar_numerico()
         case _:
             print("Valor inválido")
 
@@ -109,30 +111,50 @@ def listar_string():
     parametro = f"%{valor_consultado}%"
     listar_dados(sql, parametro)
 
+def listar_numerico():
+    limpar_tela()
+    operador_validos = [">", ">=", "<", "<=", "==", "!="]
+    try:
+        valor = int(input("Preço: "))
+        operador = input("filtro (>, >=, <, <=, == ou !=):") 
+        if operador not in operador_validos:
+            print("Digite um operador válido")
+        else:
+            sql = f"SELECT * FROM T_PRODUTO WHERE preco_produto {operador} :1"
+            listar_dados(sql,valor)
+    except ValueError:
+        print("Digite um valor válido!")
+
 # funcao que lista todos os itens da tabela
 def listar_dados(sql: str, parametro:str = None) -> None:  
     lista_produtos = []  # Lista para captura de dados do Banco
-    if not parametro:
-    # Instrução SQL com base no que foi selecinado na tela de menu
-        inst_consulta.execute(sql)
-    else:
-        inst_consulta.execute(sql,(parametro,))
-    # Captura todos os registros da tabela e armazena no objeto data
-    data = inst_consulta.fetchall()
-    # Insere os valores da tabela na Lista
-    for dt in data:
-        lista_produtos.append(dt)
-    # ordena a lista
-    lista_produtos = sorted(lista_produtos)
-    # Gera um DataFrame com os dados da lista utilizando o Pandas
-    dados_df = pd.DataFrame.from_records(
-        lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'peso'], index='cod_produto')
-    # Verifica se não há registro através do dataframe
-    if dados_df.empty:
-        print(f"Não há produto cadastrado!")
-    else:
-        print("----- PRODUTOS -----")
-        print(dados_df)
+    try:
+        # Instrução SQL com base no que foi selecinado na tela de menu
+        if not parametro:
+            inst_consulta.execute(sql)
+        else:
+            inst_consulta.execute(sql,(parametro,))
+
+        # Captura todos os registros da tabela e armazena no objeto data
+        data = inst_consulta.fetchall()
+        # Insere os valores da tabela na Lista
+        for dt in data:
+            lista_produtos.append(dt)
+        # ordena a lista
+        lista_produtos = sorted(lista_produtos)
+        # Gera um DataFrame com os dados da lista utilizando o Pandas
+        dados_df = pd.DataFrame.from_records(
+            lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'peso'], index='cod_produto')
+        # Verifica se não há registro através do dataframe
+        if dados_df.empty:
+            print(f"Não há produto cadastrado!")
+        else:
+            print("----- PRODUTOS -----")
+            print(dados_df)
+    except ValueError:
+        print("Digite um valor válido!")
+    except:
+        print("Erro na transação do BD")
 
 def editar_produto():
     try:
