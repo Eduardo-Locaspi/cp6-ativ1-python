@@ -177,6 +177,8 @@ def gerar_arquivo(extencao: str):
         df.to_excel(nm_arquivo + extencao)
     elif extencao == ".csv":
         df.to_csv(nm_arquivo + extencao)
+    else:
+        print(f"A extensão '{extencao}' não é válida.")
     
 
 def editar_produto():
