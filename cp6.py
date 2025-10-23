@@ -3,7 +3,6 @@
 
 import os
 
-from streamlit import dataframe 
 import oracledb
 import pandas as pd
 from datetime import datetime
@@ -85,7 +84,7 @@ c - Pesquisar campo (numérico)
 Gerar arquivo [E]xcel, [C]sv? ou [ENTER] para voltar ao menu
 """)
     
-    opcao = input("Escolha:_").lower()
+    opcao = input("Escolha:_")
     match opcao:
         case "":
             ...
@@ -95,10 +94,10 @@ Gerar arquivo [E]xcel, [C]sv? ou [ENTER] para voltar ao menu
             listar_string()
         case "c":
             listar_numerico()
-        case "e":
-            criar_excel()
-        case "c":
-            ...
+        case "E":
+            gerar_arquivo(".xlsx")
+        case "C":
+            gerar_arquivo(".csv")
         case _:
             print("Valor inválido")
 
@@ -138,7 +137,7 @@ def listar_numerico():
         print("Digite um valor válido!")
 
 # funcao que lista todos os itens da tabela
-def listar_dados(sql: str, parametro:str = None) -> dataframe:  
+def listar_dados(sql: str, parametro:str = None) -> str:  
     lista_produtos = []  # Lista para captura de dados do Banco
     try:
         # Instrução SQL com base no que foi selecinado na tela de menu
@@ -163,7 +162,7 @@ def listar_dados(sql: str, parametro:str = None) -> dataframe:
         
         # Verifica se não há registro através do dataframe
         if dados_df.empty:
-            return
+            return "Lista vazia"
         else:
             return dados_df
     except ValueError:
@@ -174,7 +173,10 @@ def listar_dados(sql: str, parametro:str = None) -> dataframe:
 def gerar_arquivo(extencao: str):
     nm_arquivo = input("Digite um nome para o arquivo:").strip()
     df = listar_dados("SELECT * FROM T_PRODUTO")
-    df.to_excel(nm_arquivo + extencao, index = False, header=False, startcol= 4, startrow=5)
+    if extencao == ".xlsx":
+        df.to_excel(nm_arquivo + extencao)
+    elif extencao == ".csv":
+        df.to_csv(nm_arquivo + extencao)
     
 
 def editar_produto():
@@ -231,7 +233,6 @@ try :
 except Exception as e:
     print(e)
     conexao=False
-
 else:
     conexao=True
 
