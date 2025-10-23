@@ -1,7 +1,9 @@
 # Eduardo Batista Locaspi - rm561713 - 1tdspi
 # Caio Kenzo Tayra - RM562979 - 1tdspi
 
-import os 
+import os
+
+from streamlit import dataframe 
 import oracledb
 import pandas as pd
 from datetime import datetime
@@ -80,11 +82,12 @@ def escolhaSubmenu(): # SubMenu do item 3
     print("""a - Listar Todos
 b - Pesquisar campo (String)
 c - Pesquisar campo (numérico)
+Gerar arquivo [E]xcel, [C]sv? ou [ENTER] para voltar ao menu
 """)
     
     opcao = input("Escolha:_").lower()
     match opcao:
-        case "0":
+        case "":
             ...
         case "a":
             listar_todos()
@@ -92,6 +95,10 @@ c - Pesquisar campo (numérico)
             listar_string()
         case "c":
             listar_numerico()
+        case "e":
+            criar_excel()
+        case "c":
+            ...
         case _:
             print("Valor inválido")
 
@@ -101,14 +108,18 @@ c - Pesquisar campo (numérico)
 def listar_todos(): 
     limpar_tela()
     sql = "SELECT * FROM T_PRODUTO"
-    listar_dados(sql)
+    df = listar_dados(sql)
+    print("------ Produto ------")
+    print(df)
 
 def listar_string():
     limpar_tela()
     valor_consultado = input("Qual o valor a ser consultado?_")
     sql = "SELECT * FROM T_PRODUTO WHERE nm_produto LIKE :1"
     parametro = f"%{valor_consultado}%"
-    listar_dados(sql, parametro)
+    df = listar_dados(sql, parametro)
+    print("------ Produto ------")
+    print(df)
 
 def listar_numerico():
     limpar_tela()
@@ -120,12 +131,14 @@ def listar_numerico():
             print("Digite um operador válido")
         else:
             sql = f"SELECT * FROM T_PRODUTO WHERE preco_produto {operador} :1"
-            listar_dados(sql,valor)
+            df = listar_dados(sql,valor)
+            print("------ Produto ------")
+            print(df)
     except ValueError:
         print("Digite um valor válido!")
 
 # funcao que lista todos os itens da tabela
-def listar_dados(sql: str, parametro:str = None) -> None:  
+def listar_dados(sql: str, parametro:str = None) -> dataframe:  
     lista_produtos = []  # Lista para captura de dados do Banco
     try:
         # Instrução SQL com base no que foi selecinado na tela de menu
@@ -150,15 +163,19 @@ def listar_dados(sql: str, parametro:str = None) -> None:
         
         # Verifica se não há registro através do dataframe
         if dados_df.empty:
-            print(f"Não há produto cadastrado!")
+            return
         else:
-            print("----- PRODUTOS -----")
-            print(dados_df)
-            
+            return dados_df
     except ValueError:
         print("Digite um valor válido!")
     except:
         print("Erro na transação do BD")
+
+def gerar_arquivo(extencao: str):
+    nm_arquivo = input("Digite um nome para o arquivo:").strip()
+    df = listar_dados("SELECT * FROM T_PRODUTO")
+    df.to_excel(nm_arquivo + extencao, index = False, header=False, startcol= 4, startrow=5)
+    
 
 def editar_produto():
     try:
