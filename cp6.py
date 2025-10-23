@@ -10,7 +10,7 @@ from datetime import datetime
 def limpar_tela():
     os.system("cls" if os.name == "nt" else "clear")
 
-def menu():
+def menu(): # Menu Inicial
     while True:
         limpar_tela()
         print("Supermercado")
@@ -77,7 +77,7 @@ def pesquisar_produto():
     sql = "SELECT * FROM T_PRODUTO WHERE nm_produto = :1"
     listar_dados(sql, pesquisa)
 
-def escolhaSubmenu():
+def escolhaSubmenu(): # SubMenu do item 3
     print("""a - Listar Todos
 b - Pesquisar campo (String)
 c - Pesquisar campo (numérico)
@@ -94,7 +94,10 @@ c - Pesquisar campo (numérico)
         case _:
             print("Valor inválido")
 
-def listar_todos():
+# ============================ CONSULTA
+
+#Função que guarda a instrucao sql
+def listar_todos(): 
     limpar_tela()
     sql = "SELECT * FROM T_PRODUTO"
     listar_dados(sql)
@@ -106,7 +109,8 @@ def listar_string():
     parametro = f"%{valor_consultado}%"
     listar_dados(sql, parametro)
 
-def listar_dados(sql: str, parametro:str = None) -> None:
+# funcao que lista todos os itens da tabela
+def listar_dados(sql: str, parametro:str = None) -> None:  
     lista_produtos = []  # Lista para captura de dados do Banco
     if not parametro:
     # Instrução SQL com base no que foi selecinado na tela de menu
