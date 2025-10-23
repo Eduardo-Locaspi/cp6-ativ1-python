@@ -62,7 +62,6 @@ def cadastrar():
         sql = """ INSERT INTO T_PRODUTO (nm_produto, setor_produto, dt_validade,preco_produto,qt_produto)VALUES (:1,:2,:3,:4,:5) """
         inst_cadastro.execute(sql,(nome, setor, validade, preco, qt_produto))
         conn.commit()
-        print("##### Produto cadastrado com sucesso! #####")
 
     except ValueError:
         print("Digite um valor válido!")
@@ -137,20 +136,25 @@ def listar_dados(sql: str, parametro:str = None) -> None:
 
         # Captura todos os registros da tabela e armazena no objeto data
         data = inst_consulta.fetchall()
+
         # Insere os valores da tabela na Lista
         for dt in data:
             lista_produtos.append(dt)
+
         # ordena a lista
         lista_produtos = sorted(lista_produtos)
+
         # Gera um DataFrame com os dados da lista utilizando o Pandas
         dados_df = pd.DataFrame.from_records(
             lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'peso'], index='cod_produto')
+        
         # Verifica se não há registro através do dataframe
         if dados_df.empty:
             print(f"Não há produto cadastrado!")
         else:
             print("----- PRODUTOS -----")
             print(dados_df)
+            
     except ValueError:
         print("Digite um valor válido!")
     except:
@@ -180,18 +184,23 @@ def editar_produto():
         print("Erro na transação do BD")
 
 def remover_produto():
+    limpar_tela()
     try:
         print("----- EXCLUIR PRODUTO -----")
+        listar_todos()
         nm_prod = input("Digite o nome do produto que deseja remover:")
-        sql = f"DELETE FROM T_PRODUTO WHERE nm_produto=:1"
-        # Executa a instrução e atualiza a tabela
-        inst_exclusao.execute(sql, (nm_prod,))
-        conn.commit()
+        confirmacao = input(f"Tem certeza que quer apagar a registro {nm_prod}? (Sim/Não)").strip().lower()
+        if confirmacao == "sim" or confirmacao == "s":
+            sql = f"DELETE FROM T_PRODUTO WHERE nm_produto=:1"
+            # Executa a instrução e atualiza a tabela
+            inst_exclusao.execute(sql, (nm_prod,))
+            conn.commit()
+            # Exibe mensagem caso haja sucesso
+            print("##### PRODUTO APAGADO! #####")
+        else: 
+            print("Deleção cancelada!")
     except:
         print("Erro na transação do BD")
-    else:
-        # Exibe mensagem caso haja sucesso
-        print("##### PRODUTO APAGADO! #####")
 
 # ==================== CONEXÃO ====================
 
