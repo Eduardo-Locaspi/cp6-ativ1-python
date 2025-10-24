@@ -207,19 +207,24 @@ def editar_produto():
 def remover_produto():
     limpar_tela()
     try:
-        print("----- EXCLUIR PRODUTO -----")
-        listar_todos()
-        nm_prod = input("Digite o nome do produto que deseja remover:")
-        confirmacao = input(f"Tem certeza que quer apagar a registro {nm_prod}? (Sim/Não)").strip().lower()
-        if confirmacao == "sim" or confirmacao == "s":
-            sql = f"DELETE FROM T_PRODUTO WHERE nm_produto=:1"
-            # Executa a instrução e atualiza a tabela
-            inst_exclusao.execute(sql, (nm_prod,))
-            conn.commit()
-            # Exibe mensagem caso haja sucesso
-            print("##### PRODUTO APAGADO! #####")
-        else: 
-            print("Deleção cancelada!")
+        while True:
+            print("----- EXCLUIR PRODUTO -----")
+            listar_todos()
+            nm_prod = input("Digite o nome do produto que deseja remover:")
+            confirmacao = input(f"Tem certeza que quer apagar a registro {nm_prod}? (Sim/Não)").strip().lower()
+            if confirmacao in ("sim", "s"):
+                sql = f"DELETE FROM T_PRODUTO WHERE nm_produto=:1"
+                # Executa a instrução e atualiza a tabela
+                inst_exclusao.execute(sql, (nm_prod,))
+                conn.commit()
+                # Exibe mensagem caso haja sucesso
+                print("##### PRODUTO APAGADO! #####")
+                break
+            elif confirmacao in ("não","nao","n"): 
+                print("Deleção cancelada!")
+                break
+            else:
+                print("Digite 'Sim' ou 'Não'")
     except:
         print("Erro na transação do BD")
 
