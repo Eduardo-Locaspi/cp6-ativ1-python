@@ -81,6 +81,7 @@ def escolhaSubmenu(): # SubMenu do item 3
     print("""a - Listar Todos
 b - Pesquisar campo (String)
 c - Pesquisar campo (numérico)
+d - Pesquisa Genérica
 Gerar arquivo [E]xcel, [C]sv? ou [ENTER] para voltar ao menu
 """)
     
@@ -94,6 +95,8 @@ Gerar arquivo [E]xcel, [C]sv? ou [ENTER] para voltar ao menu
             listar_string()
         case "c":
             listar_numerico()
+        case "d":
+            listar_generico()
         case "E":
             gerar_arquivo(".xlsx")
         case "C":
@@ -136,6 +139,38 @@ def listar_numerico():
     except ValueError:
         print("Digite um valor válido!")
 
+def listar_generico():
+    colunas = ["cod_produto","nm_produto","setor_produto","dt_validade","preco_produto","qt_produto"]
+    lista_produtos_gen = []
+
+    limpar_tela()
+    valor_consultado = input("Qual o valor a ser consultado?_").strip()
+    parametro = f"%{valor_consultado}%"
+
+    try:
+        for col in colunas:
+            sql = f"SELECT * FROM T_PRODUTO WHERE {col} LIKE :1"
+
+            inst_consulta.execute(sql,(parametro,))
+
+            data = inst_consulta.fetchall()
+            
+
+            for p in data:
+                lista_produtos_gen.append(p)  
+            
+            lista_produtos_gen = sorted(lista_produtos_gen)
+        
+        dados_df = pd.DataFrame.from_records(
+                lista_produtos_gen, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'qt_produto'], index='cod_produto')
+        
+        if dados_df.empty:
+            print( "Lista vazia")
+        else:
+            print( dados_df)
+    except:
+        print("Erro na transação do BD")
+
 # funcao que lista todos os itens da tabela
 def listar_dados(sql: str, parametro:str = None) -> str:  
     lista_produtos = []  # Lista para captura de dados do Banco
@@ -158,7 +193,7 @@ def listar_dados(sql: str, parametro:str = None) -> str:
 
         # Gera um DataFrame com os dados da lista utilizando o Pandas
         dados_df = pd.DataFrame.from_records(
-            lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'peso'], index='cod_produto')
+            lista_produtos, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'qt_produto'], index='cod_produto')
         
         # Verifica se não há registro através do dataframe
         if dados_df.empty:
