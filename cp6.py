@@ -72,10 +72,7 @@ def cadastrar():
         # Caso haja sucesso na gravação
         print("##### Dados GRAVADOS #####")
 
-def pesquisar_produto():
-    pesquisa = input("Produto: ")
-    sql = "SELECT * FROM T_PRODUTO WHERE nm_produto = :1"
-    listar_dados(sql, pesquisa)
+
 
 def escolhaSubmenu(): # SubMenu do item 3
     print("""a - Listar Todos
@@ -106,15 +103,20 @@ Gerar arquivo [E]xcel, [C]sv? ou [ENTER] para voltar ao menu
 
 # ============================ CONSULTA
 
+def pesquisar_produto():
+    pesquisa = input("Produto: ")
+    sql = "SELECT * FROM T_PRODUTO WHERE nm_produto = :1"
+    listar_dados(sql, pesquisa)
+
 #Função que guarda a instrucao sql
-def listar_todos(): 
+def listar_todos() -> None: 
     limpar_tela()
     sql = "SELECT * FROM T_PRODUTO"
     df = listar_dados(sql)
     print("------ Produto ------")
     print(df)
 
-def listar_string():
+def listar_string() -> None:
     limpar_tela()
     valor_consultado = input("Qual o valor a ser consultado?_")
     sql = "SELECT * FROM T_PRODUTO WHERE nm_produto LIKE :1"
@@ -123,7 +125,7 @@ def listar_string():
     print("------ Produto ------")
     print(df)
 
-def listar_numerico():
+def listar_numerico() -> None:
     limpar_tela()
     operador_validos = [">", ">=", "<", "<=", "==", "!="]
     try:
@@ -140,12 +142,17 @@ def listar_numerico():
         print("Digite um valor válido!")
 
 def listar_generico():
-    colunas = ["cod_produto","nm_produto","setor_produto","dt_validade","preco_produto","qt_produto"]
-    lista_produtos_gen = []
 
     limpar_tela()
     valor_consultado = input("Qual o valor a ser consultado?_").strip()
     parametro = f"%{valor_consultado}%"
+    df = listar_dados_genericos(parametro)
+    print(df)
+
+def listar_dados_genericos(parametro: str) -> pd.DataFrame | str:
+
+    colunas = ["cod_produto","nm_produto","setor_produto","dt_validade","preco_produto","qt_produto"]
+    lista_produtos_gen = []
 
     try:
         for col in colunas:
@@ -165,14 +172,14 @@ def listar_generico():
                 lista_produtos_gen, columns=['cod_produto', 'nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'qt_produto'], index='cod_produto')
         
         if dados_df.empty:
-            print( "Lista vazia")
+            return "Lista vazia"
         else:
-            print( dados_df)
+            return dados_df
     except:
         print("Erro na transação do BD")
 
 # funcao que lista todos os itens da tabela
-def listar_dados(sql: str, parametro:str = None) -> str:  
+def listar_dados(sql: str, parametro:str = None) -> pd.DataFrame | str:  
     lista_produtos = []  # Lista para captura de dados do Banco
     try:
         # Instrução SQL com base no que foi selecinado na tela de menu
@@ -205,7 +212,7 @@ def listar_dados(sql: str, parametro:str = None) -> str:
     except:
         print("Erro na transação do BD")
 
-def gerar_arquivo(extencao: str):
+def gerar_arquivo(extencao: str) -> None:
     nm_arquivo = input("Digite um nome para o arquivo:").strip()
     df = listar_dados("SELECT * FROM T_PRODUTO")
     if extencao == ".xlsx":
@@ -216,7 +223,7 @@ def gerar_arquivo(extencao: str):
         print(f"A extensão '{extencao}' não é válida.")
     
 
-def editar_produto():
+def editar_produto() -> None:
     try:
         id_prod = int(input("Qual id de produto iremos alterar? "))
         campos_validos = ['nm_produto', 'setor_produto', 'dt_vencimento', 'preco_produto', 'peso']
@@ -239,7 +246,7 @@ def editar_produto():
     except:
         print("Erro na transação do BD")
 
-def remover_produto():
+def remover_produto() -> None:
     limpar_tela()
     try:
         while True:
