@@ -87,34 +87,45 @@ Gerar arquivo [E]xcel, [C]sv? ou [ENTER] para voltar ao menu
         case "":
             ...
         case "a":
-            listar_todos()
+            df, sql = listar_todos()
         case "b":
-            listar_string()
+            df, sql = listar_string()
         case "c":
-            listar_numerico()
+            df, sql = listar_numerico()
         case "d":
-            listar_generico()
+            df, sql = listar_generico()
         case "E":
             gerar_arquivo(".xlsx")
         case "C":
             gerar_arquivo(".csv")
         case _:
             print("Valor inválido")
+    exibir_df(df)
+    input("Pressione ENTER para continuar...")
+
+    colunas_sql = listar_coluna()
+    print(colunas_sql)
+    mostrar_colunas_lista(colunas_sql, sql)
+
 
 # ============================ CONSULTA
+
+def exibir_df(df: pd.DataFrame) -> None:
+    print("----------- Produtos -----------")
+    print(df)
 
 def pesquisar_produto():
     pesquisa = input("Produto: ")
     sql = "SELECT * FROM T_PRODUTO WHERE nm_produto = :1"
-    listar_dados(sql, pesquisa)
+    df = listar_dados(sql, pesquisa)
+    return df
 
 #Função que guarda a instrucao sql
 def listar_todos() -> None: 
     limpar_tela()
     sql = "SELECT * FROM T_PRODUTO"
     df = listar_dados(sql)
-    print("------ Produto ------")
-    print(df)
+    return df, sql
 
 def listar_string() -> None:
     limpar_tela()
@@ -122,8 +133,8 @@ def listar_string() -> None:
     sql = "SELECT * FROM T_PRODUTO WHERE nm_produto LIKE :1"
     parametro = f"%{valor_consultado}%"
     df = listar_dados(sql, parametro)
-    print("------ Produto ------")
-    print(df)
+    
+    return df, sql
 
 def listar_numerico() -> None:
     limpar_tela()
@@ -136,13 +147,55 @@ def listar_numerico() -> None:
         else:
             sql = f"SELECT * FROM T_PRODUTO WHERE preco_produto {operador} :1"
             df = listar_dados(sql,valor)
-            print("------ Produto ------")
-            print(df)
+            return df, sql
     except ValueError:
         print("Digite um valor válido!")
 
-def listar_generico():
+def listar_coluna():
+    colunas_tabela = ["cod_produto", "nm_produto","setor_produto","dt_validade","preco_produto","qt_prduto"]
+    col_selecionada = []
+    str_colunas = ""
 
+    limpar_tela()
+    
+    for i, colunas in enumerate(colunas_tabela, start=1):
+        print(f"{i}.{colunas}")
+
+    while True:
+        try:
+            opcao = int(input("Selecione uma das colunas (Digite 0 para parar):"))
+            if opcao == 0:
+                break
+            elif len(col_selecionada) == len(colunas_tabela):
+                print("Todas as colunas foram selecionadas")
+                break
+            elif opcao > len(colunas_tabela):
+                print("Digite um número válido")
+            else:
+                col_selecionada.append(opcao - 1)
+
+        except TypeError:
+            print("Digite um número")
+
+    col_selecionada = sorted(col_selecionada)
+    for i in col_selecionada:
+        if i < len(col_selecionada) - 1:
+            str_colunas += (colunas_tabela[i] + ",")
+        else:
+            str_colunas += colunas_tabela[i]
+
+    return str_colunas
+
+def mostrar_colunas_lista(colunas_sql: str, sql: str) -> None:
+    limpar_tela()
+    sql_colunas = sql.replace("*", colunas_sql)
+    df = listar_dados(sql_colunas)
+    print(sql_colunas)
+    print(df) # <- ERRO NANI  TO-DO 
+    
+
+
+def listar_generico():
     limpar_tela()
     valor_consultado = input("Qual o valor a ser consultado?_").strip()
     parametro = f"%{valor_consultado}%"
@@ -162,7 +215,6 @@ def listar_dados_genericos(parametro: str) -> pd.DataFrame | str:
 
             data = inst_consulta.fetchall()
             
-
             for p in data:
                 lista_produtos_gen.append(p)  
             
